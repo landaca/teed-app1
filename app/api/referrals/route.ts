@@ -1,6 +1,3 @@
-'use client';
-
-// app/api/referrals/route.ts
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
 
