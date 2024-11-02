@@ -39,6 +39,22 @@ export default function ReferralSubmissionForm() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
+  const handleChange = (section: keyof FormData, field: string | null, value: string) => {
+    setFormData(prev => {
+      if (field === null) {
+        return { ...prev, [section]: value };
+      }
+      
+      return {
+        ...prev,
+        [section]: {
+          ...((prev[section] as any) || {}),
+          [field]: value
+        }
+      };
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -70,16 +86,6 @@ export default function ReferralSubmissionForm() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleChange = (section: string, field: string | null, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: field ? {
-        ...prev[section as keyof typeof prev],
-        [field]: value
-      } : value
-    }));
   };
 
   return (
