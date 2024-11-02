@@ -38,20 +38,23 @@ export default function ReferralSubmissionForm() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleChange = (type: 'referrer' | 'referee', field: keyof FormData['referrer'], value: string) => {
+  const updateReferrerField = (field: keyof FormData['referrer'], value: string) => {
     setFormData(prev => ({
       ...prev,
-      [type]: {
-        ...prev[type],
+      referrer: {
+        ...prev.referrer,
         [field]: value
       }
     }));
   };
 
-  const handleProductNameChange = (value: string) => {
+  const updateRefereeField = (field: keyof FormData['referee'], value: string) => {
     setFormData(prev => ({
       ...prev,
-      productName: value
+      referee: {
+        ...prev.referee,
+        [field]: value
+      }
     }));
   };
 
@@ -109,7 +112,7 @@ export default function ReferralSubmissionForm() {
             <input
               type="text"
               value={formData.productName}
-              onChange={(e) => handleProductNameChange(e.target.value)}
+              onChange={(e) => setFormData(prev => ({ ...prev, productName: e.target.value }))}
               className={inputClasses}
               placeholder="Enter product or service name"
               required
@@ -125,7 +128,7 @@ export default function ReferralSubmissionForm() {
               <input
                 type="text"
                 value={formData.referrer.firstName}
-                onChange={(e) => handleChange('referrer', 'firstName', e.target.value)}
+                onChange={(e) => updateReferrerField('firstName', e.target.value)}
                 className={inputClasses}
                 placeholder="Your first name"
                 required
@@ -136,7 +139,7 @@ export default function ReferralSubmissionForm() {
               <input
                 type="text"
                 value={formData.referrer.lastName}
-                onChange={(e) => handleChange('referrer', 'lastName', e.target.value)}
+                onChange={(e) => updateReferrerField('lastName', e.target.value)}
                 className={inputClasses}
                 placeholder="Your last name"
                 required
@@ -148,7 +151,7 @@ export default function ReferralSubmissionForm() {
             <input
               type="email"
               value={formData.referrer.email}
-              onChange={(e) => handleChange('referrer', 'email', e.target.value)}
+              onChange={(e) => updateReferrerField('email', e.target.value)}
               className={inputClasses}
               placeholder="your.email@example.com"
               required
@@ -164,7 +167,7 @@ export default function ReferralSubmissionForm() {
               <input
                 type="text"
                 value={formData.referee.firstName}
-                onChange={(e) => handleChange('referee', 'firstName', e.target.value)}
+                onChange={(e) => updateRefereeField('firstName', e.target.value)}
                 className={inputClasses}
                 placeholder="Their first name"
                 required
@@ -175,7 +178,7 @@ export default function ReferralSubmissionForm() {
               <input
                 type="text"
                 value={formData.referee.lastName}
-                onChange={(e) => handleChange('referee', 'lastName', e.target.value)}
+                onChange={(e) => updateRefereeField('lastName', e.target.value)}
                 className={inputClasses}
                 placeholder="Their last name"
                 required
@@ -187,7 +190,7 @@ export default function ReferralSubmissionForm() {
             <input
               type="email"
               value={formData.referee.email}
-              onChange={(e) => handleChange('referee', 'email', e.target.value)}
+              onChange={(e) => updateRefereeField('email', e.target.value)}
               className={inputClasses}
               placeholder="their.email@example.com"
               required
