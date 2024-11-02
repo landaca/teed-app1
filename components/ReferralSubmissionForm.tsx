@@ -1,4 +1,3 @@
-// components/ReferralSubmissionForm.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -39,20 +38,21 @@ export default function ReferralSubmissionForm() {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleChange = (section: keyof FormData, field: string | null, value: string) => {
-    setFormData(prev => {
-      if (field === null) {
-        return { ...prev, [section]: value };
+  const handleChange = (type: 'referrer' | 'referee', field: keyof FormData['referrer'], value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [type]: {
+        ...prev[type],
+        [field]: value
       }
-      
-      return {
-        ...prev,
-        [section]: {
-          ...((prev[section] as any) || {}),
-          [field]: value
-        }
-      };
-    });
+    }));
+  };
+
+  const handleProductNameChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      productName: value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,7 +109,7 @@ export default function ReferralSubmissionForm() {
             <input
               type="text"
               value={formData.productName}
-              onChange={(e) => handleChange('productName', null, e.target.value)}
+              onChange={(e) => handleProductNameChange(e.target.value)}
               className={inputClasses}
               placeholder="Enter product or service name"
               required
