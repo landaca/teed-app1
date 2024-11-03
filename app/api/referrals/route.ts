@@ -1,10 +1,20 @@
+// app/api/referrals/route.ts
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
+
+const cleanPrivateKey = (key: string = '') => {
+  // Remove any quotes and normalize line endings
+  return key
+    .replace(/\\n/g, '\n')
+    .replace(/"/g, '')
+    .replace(/\n/g, '\n')
+    .trim();
+};
 
 const auth = new google.auth.GoogleAuth({
   credentials: {
     client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    private_key: cleanPrivateKey(process.env.GOOGLE_PRIVATE_KEY),
   },
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
