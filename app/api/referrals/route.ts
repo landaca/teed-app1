@@ -2,20 +2,34 @@
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
 
+function formatPrivateKey(key: string) {
+  // First, remove any existing line breaks and quotes
+  const cleanedKey = key.replace(/\\n/g, '\n').replace(/"/g, '');
+  
+  // Split into lines and reassemble with proper format
+  const lines = cleanedKey.split('\n').filter(line => line.length > 0);
+  
+  if (!lines[0].includes('BEGIN') || !lines[lines.length - 1].includes('END')) {
+    // If the key doesn't have proper BEGIN/END markers, add them
+    return `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----`;
+  }
+  
+  return lines.join('\n');
+}
+
 export async function POST(request: Request) {
   try {
-    // Log the key format (but not the actual key)
-    console.log('Private key starts with:', process.env.GOOGLE_PRIVATE_KEY?.substring(0, 20));
-    console.log('Private key contains \\n?', process.env.GOOGLE_PRIVATE_KEY?.includes('\\n'));
-    console.log('Private key contains actual line breaks?', process.env.GOOGLE_PRIVATE_KEY?.includes('\n'));
-    
     const body = await request.json();
     console.log('Received submission:', body);
+
+    const privateKey = formatPrivateKey(process.env.GOOGLE_PRIVATE_KEY || '');
+    console.log('Formatted key starts with:', privateKey.substring(0, 27));
+    console.log('Formatted key contains proper line breaks:', privateKey.includes('\n'));
 
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY,
+        private_key: privateKey,
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
@@ -35,10 +49,8 @@ export async function POST(request: Request) {
       'Pending' // Status
     ];
 
-    // Log before making the request
     console.log('About to make sheets API request');
 
-    // Append to Google Sheet
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
       range: 'Sheet1!A:I',
@@ -56,7 +68,6 @@ export async function POST(request: Request) {
     }, { status: 201 });
 
   } catch (error: any) {
-    // Enhanced error logging
     console.error('Full error object:', error);
     console.error('Error name:', error.name);
     console.error('Error message:', error.message);
