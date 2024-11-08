@@ -2,22 +2,45 @@
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
 
+function preparePrivateKey(key: string) {
+  // Remove any existing quotes and spaces
+  const cleanKey = key.replace(/"/g, '').trim();
+  
+  // Check if the key needs to be split into lines
+  if (!cleanKey.includes('\n')) {
+    const keyParts = cleanKey.match(/.{1,64}/g) || [];
+    return [
+      '-----BEGIN PRIVATE KEY-----',
+      ...keyParts,
+      '-----END PRIVATE KEY-----'
+    ].join('\n');
+  }
+  
+  return cleanKey;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     console.log('Received submission:', body);
 
+    // Get and prepare the private key
+    const rawKey = process.env.GOOGLE_PRIVATE_KEY || '';
+    const privateKey = preparePrivateKey(rawKey);
+    
+    // Log key format for debugging (don't log the actual key content)
     console.log('Key format check:');
-    console.log('Contains BEGIN:', process.env.GOOGLE_PRIVATE_KEY?.includes('BEGIN'));
-    console.log('Contains actual newlines:', process.env.GOOGLE_PRIVATE_KEY?.includes('\n'));
-    console.log('First line:', process.env.GOOGLE_PRIVATE_KEY?.split('\n')[0]);
+    console.log('Has BEGIN marker:', privateKey.includes('BEGIN PRIVATE KEY'));
+    console.log('Has END marker:', privateKey.includes('END PRIVATE KEY'));
+    console.log('Contains newlines:', privateKey.includes('\n'));
+    console.log('Number of lines:', privateKey.split('\n').length);
 
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY,
+        private_key: privateKey
       },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
 
     const sheets = google.sheets({ version: 'v4', auth });
@@ -39,9 +62,11 @@ export async function POST(request: Request) {
       range: 'Sheet1!A:I',
       valueInputOption: 'USER_ENTERED',
       requestBody: {
-        values: [row],
-      },
+        values: [row]
+      }
     });
+
+    console.log('Sheets API response:', response.status);
 
     return NextResponse.json({ 
       success: true, 
@@ -52,8 +77,7 @@ export async function POST(request: Request) {
     console.error('Error details:', {
       message: error.message,
       name: error.name,
-      code: error.code,
-      stack: error.stack
+      code: error.code
     });
     
     return NextResponse.json({ 
